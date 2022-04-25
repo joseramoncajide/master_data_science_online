@@ -31,7 +31,7 @@ pi %>% round(6)
 # compute the exponential function and round the result
 round(exp(diff(log(x))), 1)
 
-# Exercise: repeat the previous formuals using pipes
+# Exercise: repeat the previous formula using pipes
 
 
 
