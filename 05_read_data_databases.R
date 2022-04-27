@@ -28,9 +28,6 @@ dbClearResult(res)
 df %>% 
   as_tibble()
 
-
-dbGetQuery(con, "SELECT * FROM msleep", vore == 'carni')
-
 dbGetQuery(
   con,
   "SELECT COUNT(*) FROM msleep WHERE vore = ?",
