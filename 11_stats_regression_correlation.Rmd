@@ -60,14 +60,7 @@ $$s^{2}={\frac{{\displaystyle \sum_{i=1}^{n}\left(x_{i}-\mu\right)^{2}}}{n-1}}$$
 Standard deviation: $$s=\sqrt{s^{2}}$$ Exercise: Calculate the Standard Deviation of $x$ and $y$
 
 ```{r}
-mu_x <- mean(galton_heights$father)
-mu_y <- mean(galton_heights$son)
 
-s_x <- sqrt(sum((x - mu_x)^2) / (length(x) - 1))
-s_y <- sqrt(sum((y - mu_y)^2) / (length(y) - 1))
-
-print(s_x)
-print(s_y)
 ```
 
 ```{r}
@@ -82,8 +75,7 @@ It's possible to use a significance test comparing the sample distribution to a 
 Exercise: Use a valid test to check for normality in $x$ and $y$
 
 ```{r}
-shapiro.test(x)
-shapiro.test(y)
+
 ```
 
 Suppose we were asked to summarize the father and son data. Since both distributions are well approximated by the normal distribution, we could use the two averages and two standard deviations as summaries:
@@ -116,7 +108,7 @@ Exercise:
 Calculate de correlation coefficient between fathers and sons heights.
 
 ```{r echo=TRUE}
-sum ( ((x - mean(x)) / s_x) * ((y - mean(y))  / s_y ) )   * 1 / length(x)
+
 ```
 
 We can also represent the formula above with R code using:
@@ -161,17 +153,7 @@ $$
 Ex. Calculate de slope and the intercept
 
 ```{r regression-line, fig.height = 3, fig.width = 3, out.width="40%"}
-mu_x <- mean(galton_heights$father)
-mu_y <- mean(galton_heights$son)
-s_x <- sd(galton_heights$father)
-s_y <- sd(galton_heights$son)
-r <- cor(galton_heights$father, galton_heights$son)
 
-slope <- r * s_y/s_x
-intercept <- mu_y - r * s_y/s_x * mu_x
-
-print(slope)
-print(intercept)
 ```
 
 Here we add the regression line to the original data:
@@ -192,4 +174,4 @@ galton_heights %>%
   geom_abline(intercept = 0, slope = r) 
 ```
 
-Source: <https://rafalab.github.io/dsbook/>
+Credits: <https://rafalab.github.io/dsbook/>
