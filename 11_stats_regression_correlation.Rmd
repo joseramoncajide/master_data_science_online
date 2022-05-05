@@ -1,0 +1,195 @@
+---
+title: "Linear Regression"
+author: "Jose Cajide"
+date: '2022-05-03'
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# Regression {#regression}
+
+## Case study: is height hereditary? {#galton}
+
+We have access to Galton's family height data through the **HistData** package. This data contains heights on several dozen families: mothers, fathers, daughters, and sons. To imitate Galton's analysis, we will create a dataset with the heights of fathers and a randomly selected son of each family:
+
+```{r, message=FALSE, warning=FALSE}
+library(tidyverse)
+library(HistData)
+theme_set(theme_bw())
+data("GaltonFamilies")
+set.seed(1983)
+galton_heights <- GaltonFamilies %>%
+  filter(gender == "male") %>%
+  group_by(family) %>%
+  sample_n(1) %>%
+  ungroup() %>%
+  select(father, childHeight) %>%
+  rename(son = childHeight)
+
+head(galton_heights, 3)
+```
+
+Here we create a vector $x$ with father heights and a vector \$y\$ with sons heights.
+
+```{r}
+x <- galton_heights$father
+y <- galton_heights$son
+```
+
+```{r , fig.height = 3, fig.width = 3, out.width="40%"}
+hist(x, col='steelblue', main='x')
+hist(y, col='steelblue', main='y')
+
+qqnorm(x, main='Normal')
+qqline(x)
+
+qqnorm(y, main='Normal')
+qqline(y)
+
+```
+
+**Dispersion measures**
+
+Variance:
+
+$$s^{2}={\frac{{\displaystyle \sum_{i=1}^{n}\left(x_{i}-\mu\right)^{2}}}{n-1}}$$
+
+Standard deviation: $$s=\sqrt{s^{2}}$$ Exercise: Calculate the Standard Deviation of $x$ and $y$
+
+```{r}
+mu_x <- mean(galton_heights$father)
+mu_y <- mean(galton_heights$son)
+
+s_x <- sqrt(sum((x - mu_x)^2) / (length(x) - 1))
+s_y <- sqrt(sum((y - mu_y)^2) / (length(y) - 1))
+
+print(s_x)
+print(s_y)
+```
+
+```{r}
+sd(x)
+sd(y)
+```
+
+**Is data normally distributed?**
+
+It's possible to use a significance test comparing the sample distribution to a normal one in order to ascertain whether data show or not a serious deviation from normality.
+
+Exercise: Use a valid test to check for normality in $x$ and $y$
+
+```{r}
+shapiro.test(x)
+shapiro.test(y)
+```
+
+Suppose we were asked to summarize the father and son data. Since both distributions are well approximated by the normal distribution, we could use the two averages and two standard deviations as summaries:
+
+```{r, message=FALSE, warning=FALSE}
+galton_heights %>% 
+  summarize(mean(father), sd(father), mean(son), sd(son))
+```
+
+However, this summary fails to describe an important characteristic of the data: the trend that the taller the father, the taller the son.
+
+```{r scatterplot, fig.height = 3, fig.width = 3, out.width="40%"}
+galton_heights %>% 
+  ggplot(aes(father, son)) + 
+  geom_point(alpha = 0.5)
+```
+
+We will learn that the correlation coefficient is an informative summary of how two variables move together and then see how this can be used to predict one variable using the other.
+
+## The correlation coefficient {#corr-coef}
+
+The correlation coefficient is defined for a list of pairs $(x_1, y_1), \dots, (x_n,y_n)$ as the average of the product of the standardized values:
+
+$$
+\rho = \frac{1}{n} \sum_{i=1}^n \left( \frac{x_i-\mu_x}{\sigma_x} \right)\left( \frac{y_i-\mu_y}{\sigma_y} \right)
+$$ with $\mu_x, \mu_y$ the averages of $x_1,\dots, x_n$ and $y_1, \dots, y_n$, respectively, and $\sigma_x, \sigma_y$ the standard deviations. The Greek letter $\rho$ is commonly used in statistics books to denote the correlation. The Greek letter for $r$, $\rho$, because it is the first letter of regression.
+
+Exercise:
+
+Calculate de correlation coefficient between fathers and sons heights.
+
+```{r echo=TRUE}
+sum ( ((x - mean(x)) / s_x) * ((y - mean(y))  / s_y ) )   * 1 / length(x)
+```
+
+We can also represent the formula above with R code using:
+
+```{r}
+rho <- mean(scale(x) * scale(y)) 
+rho
+```
+
+```{r}
+galton_heights %>% 
+  summarize(r = cor(father, son)) %>% 
+  pull(r)
+```
+
+The correlation between father and son's heights is about 0.5
+
+## The regression line
+
+**Connection between correlation and regression.**
+
+If we are predicting a random variable $Y$ knowing the value of another $X=x$ using a regression line, then we predict that for every standard deviation, $\sigma_X$, that $x$ increases above the average $\mu_X$, $Y$ increase $\rho$ standard deviations $\sigma_Y$ above the average $\mu_Y$ with $\rho$ the correlation between $X$ and $Y$. The formula for the regression is therefore:
+
+$$ 
+\left( \frac{Y-\mu_Y}{\sigma_Y} \right) = \rho \left( \frac{x-\mu_X}{\sigma_X} \right)
+$$
+
+We can rewrite it like this:
+
+$$ 
+Y = \mu_Y + \rho \left( \frac{x-\mu_X}{\sigma_X} \right) \sigma_Y
+$$
+
+If there is perfect correlation, the regression line predicts an increase that is the same number of SDs. If there is 0 correlation, then we don't use $x$ at all for the prediction and simply predict the average $\mu_Y$. For values between 0 and 1, the prediction is somewhere in between. If the correlation is negative, we predict a reduction instead of an increase.
+
+Note that if the correlation is positive and lower than 1, our prediction is closer, in standard units, to the average height than the value used to predict, $x$, is to the average of the $x$s. This is why we call it *regression*: the son regresses to the average height. In fact, the title of Galton's paper was: *Regression toward mediocrity in hereditary stature*. To add regression lines to plots, we will need the above formula in the form:
+
+$$
+y= b + mx \mbox{ with slope } m = \rho \frac{\sigma_y}{\sigma_x} \mbox{ and intercept } b=\mu_y - m \mu_x
+$$
+
+Ex. Calculate de slope and the intercept
+
+```{r regression-line, fig.height = 3, fig.width = 3, out.width="40%"}
+mu_x <- mean(galton_heights$father)
+mu_y <- mean(galton_heights$son)
+s_x <- sd(galton_heights$father)
+s_y <- sd(galton_heights$son)
+r <- cor(galton_heights$father, galton_heights$son)
+
+slope <- r * s_y/s_x
+intercept <- mu_y - r * s_y/s_x * mu_x
+
+print(slope)
+print(intercept)
+```
+
+Here we add the regression line to the original data:
+
+```{r regression-line-plot, fig.height = 3, fig.width = 3, out.width="40%"}
+galton_heights %>% 
+  ggplot(aes(father, son)) + 
+  geom_point(alpha = 0.5) +
+  geom_abline(slope = slope, intercept = intercept) 
+```
+
+The regression formula implies that if we first standardize the variables, that is subtract the average and divide by the standard deviation, then the regression line has intercept 0 and slope equal to the correlation $\rho$. You can make same plot, but using standard units like this:
+
+```{r regression-line-standard-units, fig.height = 3, fig.width = 3, out.width="40%", eval=FALSE}
+galton_heights %>% 
+  ggplot(aes(scale(father), scale(son))) + 
+  geom_point(alpha = 0.5) +
+  geom_abline(intercept = 0, slope = r) 
+```
+
+Source: <https://rafalab.github.io/dsbook/>
