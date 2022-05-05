@@ -158,7 +158,7 @@ Ex. Calculate de slope and the intercept
 
 Here we add the regression line to the original data:
 
-```{r regression-line-plot, fig.height = 3, fig.width = 3, out.width="40%"}
+```{r regression-line-plot, eval=FALSE, fig.height=3, fig.width=3, include=FALSE, out.width="40%"}
 galton_heights %>% 
   ggplot(aes(father, son)) + 
   geom_point(alpha = 0.5) +
