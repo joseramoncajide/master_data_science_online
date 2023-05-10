@@ -293,11 +293,8 @@ library(stringr)
 # str_c() is equivalent to the paste() functions
 str_c("Learning", "to", "use", "the", "stringr", "package", sep = " ")
 
-# str_length() is similiar to the nchar() but: (compare)
-# some text with NA
 text = c("Learning", "to", NA, "use", "the", NA, "stringr", "package")
 nchar(text)
-str_length(text)
 
 # str_sub() is similar to substr()
 x <- "Learning to use the stringr package"
