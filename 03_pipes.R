@@ -37,5 +37,5 @@ round(exp(diff(log(x))), 1)
 
 # The %<>%  pipe
 
-x <- rnorm(100)
+x <- seq(-10,10)
 x %<>% abs %>% sort
