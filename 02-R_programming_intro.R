@@ -118,3 +118,13 @@ sapply(calendario, busca_ano_actual)
 # Comprueba que el resultado es igual que de la función mean()
 
 
+# Ejercicio #3 ------------------------------------------------------------
+
+# Accede a: https://www.kaggle.com/code/avanwyk/encoding-cyclical-features-for-deep-learning
+# Crea un vector con una secuencia de horas a lo largo de dos días y dibújalo
+# Ej. 1  2  3  4  5  6  7  8  9 10 11 12 ...
+# Crea una función que permita hacer una codificación cíclica de las horas del día mediante la generación 
+# de dos variables usando el seno y el coseno
+
+
+
